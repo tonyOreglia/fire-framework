@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const submitButton = form.querySelector('button[type="submit"]');
   const emailInput = document.getElementById("email");
 
-  form.addEventListener("submit", function (e) {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const email = emailInput.value.trim();
@@ -16,30 +16,31 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Create mailto link with pre-filled content
-    const subject = encodeURIComponent("FIRE Method Resource Kit Request");
-    const body = encodeURIComponent(`Hi Tony,
+    try {
+      // Send GET request to enqueue endpoint
+      const response = await fetch(
+        `/enqueue?email=${encodeURIComponent(email)}`
+      );
 
-I'm interested in receiving the FIRE Method Resource Kit. 
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
 
-My email address: ${email}
+      // Show success message
+      showMessage(
+        "Thank you! The resource kit will be sent to your email shortly.",
+        "success"
+      );
 
-Best regards,
-[Your name]`);
-
-    const mailtoLink = `mailto:tony.oreglia@gmail.com?subject=${subject}&body=${body}`;
-
-    // Open email client
-    window.location.href = mailtoLink;
-
-    // Show success message
-    showMessage(
-      "Email client opened! Please send the email to receive your resource kit.",
-      "success"
-    );
-
-    // Reset form
-    form.reset();
+      // Reset form
+      form.reset();
+    } catch (error) {
+      showMessage(
+        "Sorry, there was an error processing your request. Please try again.",
+        "error"
+      );
+      console.error("Error:", error);
+    }
   });
 
   function showMessage(message, type) {
